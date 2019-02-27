@@ -21,16 +21,19 @@ public class InEmployeeCsv {
     private String gender;
 
     @DataField(pos = 4)
-    private String position;
+    private Integer birthYear;
 
     @DataField(pos = 5)
-    private String address;
+    private String position;
 
     @DataField(pos = 6)
+    private String address;
+
+    @DataField(pos = 7)
     private String phoneNumber;
 
     //@DataField(pos = 6, pattern = "yyyy-MM-dd hh:mm:ss.nnn")
-    @DataField(pos = 7, pattern = "yyyy-MM-dd")
+    @DataField(pos = 8, pattern = "yyyy-MM-dd")
     private LocalDate createdDate;
 
     private String companyCarBrand;
