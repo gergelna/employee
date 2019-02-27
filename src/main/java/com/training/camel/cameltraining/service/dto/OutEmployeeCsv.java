@@ -15,15 +15,18 @@ public class OutEmployeeCsv {
     @DataField(pos = 2, length = 20)
     private String fullName;
 
-    @DataField(pos = 3, length = 20)
+    @DataField(pos = 3)
     private String firstName;
 
     @DataField(pos = 4, length = 20)
     private String lastName;
 
-    @DataField(pos = 5, length = 20)
+    @DataField(pos = 5)
     private String companyCarBrand;
 
-    @DataField(pos = 6, length = 10, pattern = "yyyy-MM-dd")
+    @DataField(pos = 6, pattern = "yyyy-MM-dd")
     private LocalDate createdDate;
+
+    @DataField(pos = 7)
+    private String phoneNumber;
 }

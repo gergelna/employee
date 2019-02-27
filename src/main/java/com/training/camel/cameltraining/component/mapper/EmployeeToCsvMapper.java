@@ -12,6 +12,7 @@ public interface EmployeeToCsvMapper {
     @Mappings({
                   @Mapping(source = "id", target = "employeeId"),
                   @Mapping(source = "name", target = "fullName")
+                  //@Mapping(source = "phoneNumber", target = "phoneNumber")
               })
     OutEmployeeCsv employeeToOutput(InEmployeeCsv input);
 

@@ -1,6 +1,7 @@
 package com.training.camel.cameltraining.service.dto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.Data;
 import org.apache.camel.dataformat.bindy.annotation.DataField;
 import org.apache.camel.dataformat.bindy.annotation.FixedLengthRecord;
@@ -26,4 +27,7 @@ public class OutEmployeeFixedLen {
 
     @DataField(pos = 6, length = 10, pattern = "yyyy-MM-dd")
     private LocalDate createdDate;
+
+    @DataField(pos = 7, length = 20, pattern = "yyyy-MM-dd hh:mm:ss")
+    private LocalDateTime today;
 }
