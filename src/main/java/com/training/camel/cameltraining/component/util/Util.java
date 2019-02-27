@@ -1,11 +1,14 @@
 package com.training.camel.cameltraining.component.util;
 
 import org.apache.camel.Exchange;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 @Component
 public class Util {
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     public static final String EMPLOYEE_ID = "employeeId";
 
@@ -13,6 +16,11 @@ public class Util {
         if (exchange.getProperty(EMPLOYEE_ID) ==  null){
             throw new IllegalStateException("EmployeeId property does not exist");
         }
+    }
+
+    public void throwException(Exchange exchange){
+        String builtInCamelExceptionMessage = exchange.getProperty("CamelExceptionCaught", String.class);
+        throw new IllegalStateException(builtInCamelExceptionMessage + "; " + exchange.getIn().getBody(String.class));
     }
 
     public void debug(Exchange exchange){
