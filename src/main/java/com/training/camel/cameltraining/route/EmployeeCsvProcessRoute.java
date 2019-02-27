@@ -8,6 +8,8 @@ import com.training.camel.cameltraining.route.aggregate.EmployeeEnricher;
 import com.training.camel.cameltraining.service.dto.InEmployeeCsv;
 import com.training.camel.cameltraining.service.dto.OutEmployeeCsv;
 import com.training.camel.cameltraining.service.dto.OutEmployeeFixedLen;
+import org.apache.camel.Predicate;
+import org.apache.camel.builder.PredicateBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.dataformat.bindy.csv.BindyCsvDataFormat;
 import org.apache.camel.dataformat.bindy.fixed.BindyFixedLengthDataFormat;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Component;
 public class EmployeeCsvProcessRoute extends RouteBuilder {
 
     public static final String URI_DIRECT_OUTPUT_CSV = "direct:outputCsv";
+    public static final String URI_DIRECT_OUTPUT_FEMALE_CSV = "direct:outputFemaleCsv";
     public static final String URI_DIRECT_OUTPUT_FIXED_LEN = "direct:outputFixedLen";
 
     private final EmployeeToCsvMapper employeeToCsvMapper;
@@ -41,6 +44,10 @@ public class EmployeeCsvProcessRoute extends RouteBuilder {
         DataFormat bindyOutEmployeeToCsv = new BindyCsvDataFormat(OutEmployeeCsv.class);
         DataFormat bindyOutEmployeeToFixedLen = new BindyFixedLengthDataFormat(OutEmployeeFixedLen.class);
 
+        Predicate maleNagy = PredicateBuilder.and(body().isNotNull(),
+                                                      body().method("getGender").isEqualTo("male"),
+                                                      body().method("getName").contains("Nagy"));
+
         //@formatter:off
         from("file:src/data/csv?noop=true")
             .routeId("csvFileReading")
@@ -53,6 +60,7 @@ public class EmployeeCsvProcessRoute extends RouteBuilder {
                 .enrich(RestRoutes.URI_DIRECT_FETCH_COMPANY_CAR_BY_EMPLOYEE_ID, employeeEnricher)
                 .multicast()
                     .to(URI_DIRECT_OUTPUT_CSV)
+                    .to(URI_DIRECT_OUTPUT_FEMALE_CSV)
                     .to(URI_DIRECT_OUTPUT_FIXED_LEN)
                 //.bean(employeeToCsvMapper, "employeeToOutput")
                 //.marshal(bindyEmployeeOutputCsv)
@@ -65,6 +73,16 @@ public class EmployeeCsvProcessRoute extends RouteBuilder {
             .bean(employeeToCsvConverter, "convertEmployee")
             .marshal(bindyOutEmployeeToCsv)
             .to("file:src/data/output/?fileName=OutEmployee.csv&fileExist=append")
+            .end();
+
+        from(URI_DIRECT_OUTPUT_FEMALE_CSV)
+            .routeId("outFemaleCsv")
+            //.filter().simple("${body.gender} == 'female'")
+            //.filter(body().method("getGender").isEqualTo("female"))
+            .filter(maleNagy)
+            .bean(employeeToCsvConverter, "convertEmployee")
+            .marshal(bindyOutEmployeeToCsv)
+            .to("file:src/data/output/?fileName=OutFemaleEmployee.csv&fileExist=append")
             .end();
 
         from(URI_DIRECT_OUTPUT_FIXED_LEN)
