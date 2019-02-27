@@ -26,7 +26,6 @@ public class EmployeeCsvProcessRoute extends RouteBuilder {
     public static final String URI_DIRECT_OUTPUT_FEMALE_EMPLOYEE_CSV = "direct:outputFemaleCsv";
     public static final String URI_DIRECT_OUTPUT_EMPLOYEE_FIXED_LEN = "direct:outputFixedLen";
     public static final String URI_DIRECT_UNMARSHAL_IN_EMPLOYEE_TRY_CATCH = "direct:unmarshalInEmployee";
-    public static final String URI_DIRECT_UNMARSHAL_IN_EMPLOYEE_ONEXCEPTION = "direct:unmarshalInEmployeeOnException";
 
     private static final String ARCHIVE_FOLDER = "{{training.folder.archive}}/${date:now:yyyyMMddHHmm}/${file:name}";
     private static final String ERROR_FOLDER = "{{training.folder.error}}/${date:now:yyyyMMddHHmm}/${file:name}";
@@ -106,27 +105,6 @@ public class EmployeeCsvProcessRoute extends RouteBuilder {
                 //.throwException(IllegalArgumentException.class, "parsing error: ${body}")
                 .bean(util, "throwException")
             .end();
-
-  /*      from(URI_DIRECT_UNMARSHAL_IN_EMPLOYEE_ONEXCEPTION)
-            .routeId("unmarshalEmployeeOnException")
-            .log("unmarshal with onException route is started")
-            .onException(IllegalArgumentException.class)
-                .handled(true)
-                .bean(util, "throwException")
-                .to("direct:onExceptionLog")
-            .end()
-            .unmarshal(bindyInEmployeeCsv)
-            //.throwException(IllegalArgumentException.class, "parsing error: ${body}")
-            //.bean(util, "throwException")
-            .end();*/
-
- /*       from("direct:onExceptionLog")
-            .log("onExceptionLog from unmarshal route: ${exception.message}")
-            .to("mock:1");
-
-        from("direct:onExceptionLogFromMain")
-            .log("onExceptionLog from main route")
-            .to("mock:2");*/
 
         from(URI_DIRECT_OUTPUT_EMPLOYEE_CSV)
             .routeId("outCsv")
