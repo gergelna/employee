@@ -36,5 +36,8 @@ public class InEmployeeCsv {
     @DataField(pos = 8, pattern = "yyyy-MM-dd")
     private LocalDate createdDate;
 
+    @DataField(pos = 9)
+    private Integer salary;
+
     private String companyCarBrand;
 }
