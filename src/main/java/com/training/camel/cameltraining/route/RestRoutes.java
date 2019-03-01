@@ -30,19 +30,20 @@ public class RestRoutes extends RouteBuilder {
         JacksonDataFormat companyCarListJsonFormat = new ListJacksonDataFormat(CompanyCarDTO.class);
 
         //@formatter:off
-        from(URI_DIRECT_FETCH_ALL_REST_DATA)
+        //from(URI_DIRECT_FETCH_ALL_REST_DATA)
+        from("direct:fetchAllRestData")
             .routeId(ROUTE_ID_FETCH_REST_DATA)
-            .log("Fetch all Rest data is route started")
-            //.to(REST_BASE_URL + "companycars")
-            .bean(util, "debug")
-            .toD("{{training.rest.url}}/companycars")
+            .log("Fetch all Rest data route is started")
+            //.toD("{{training.rest.url}}/companycars")
+            .to("http4://localhost:9001/camel/api/companycars")
             .convertBodyTo(String.class)
+            .log("rest x-custom header:${header.x-custom}")
             .log("rest body: ${body}")
-            .bean(util, "debug")
             .unmarshal(companyCarListJsonFormat)
+            .log("body after unmarshal: ${body}")
 
             .split().simple("${body}").streaming()
-                .log("spl body.id:${body.id}; whole body:${body}")
+                .log("in split body.id:${body.id}; whole body:${body}")
             .end()
             .log("Fetch all Rest data is route ended")
             .end();

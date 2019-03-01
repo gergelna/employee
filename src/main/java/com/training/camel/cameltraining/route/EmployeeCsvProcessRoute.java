@@ -23,34 +23,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class EmployeeCsvProcessRoute extends RouteBuilder {
 
-    public static final String URI_DIRECT_OUTPUT_EMPLOYEE_CSV = "direct:outputCsv";
-    public static final String URI_DIRECT_OUTPUT_MANAGER_CSV = "direct:outputManagerCsv";
-    public static final String URI_DIRECT_OUTPUT_FEMALE_EMPLOYEE_CSV = "direct:outputFemaleCsv";
-    public static final String URI_DIRECT_OUTPUT_EMPLOYEE_FIXED_LEN = "direct:outputFixedLen";
     public static final String URI_DIRECT_UNMARSHAL_IN_EMPLOYEE_TRY_CATCH = "direct:unmarshalInEmployee";
     public static final String URI_DIRECT_TRANSFORM_EMPLOYEE = "direct:transformEmployee";
     public static final String URI_DIRECT_AGGREGATE_SALARIES = "direct:aggregateSalaries";
-    public static final String URI_DIRECT_OUTPUT_AGGREGATED_SALARIES = "direct:outAggregatedSalaries";
 
     private static final String ARCHIVE_FOLDER = "{{training.folder.archive}}/${date:now:yyyyMMddHHmm}/${file:name}";
     private static final String ERROR_FOLDER = "{{training.folder.error}}/${date:now:yyyyMMddHHmm}/${file:name}";
 
-    private final EmployeeToCsvMapper employeeToCsvMapper;
-    private final EmployeeToFixedLenConverter employeeToFixedLenConverter;
-    private final EmployeeToCsvConverter employeeToCsvConverter;
+    public static DataFormat bindyInEmployeeCsv = new BindyCsvDataFormat(InEmployeeCsv.class);
+
     private final EmployeeEnricher employeeEnricher;
     private final PhoneNumberTransformProcessor phoneNumberTransformProcessor;
     private final Util util;
 
-    public EmployeeCsvProcessRoute(EmployeeToCsvMapper employeeToCsvMapper,
-                                   EmployeeToFixedLenConverter employeeToFixedLenConverter,
-                                   EmployeeToCsvConverter employeeToCsvConverter,
-                                   EmployeeEnricher employeeEnricher,
+    public EmployeeCsvProcessRoute(EmployeeEnricher employeeEnricher,
                                    PhoneNumberTransformProcessor phoneNumberTransformProcessor,
                                    Util util) {
-        this.employeeToCsvMapper = employeeToCsvMapper;
-        this.employeeToFixedLenConverter = employeeToFixedLenConverter;
-        this.employeeToCsvConverter = employeeToCsvConverter;
         this.employeeEnricher = employeeEnricher;
         this.phoneNumberTransformProcessor = phoneNumberTransformProcessor;
         this.util = util;
@@ -58,25 +46,23 @@ public class EmployeeCsvProcessRoute extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
-        DataFormat bindyInEmployeeCsv = new BindyCsvDataFormat(InEmployeeCsv.class);
-        DataFormat bindyOutEmployeeToCsv = new BindyCsvDataFormat(OutEmployeeCsv.class);
-        DataFormat bindyOutAggregatedToCsv = new BindyCsvDataFormat(SalaryCsv.class);
-        DataFormat bindyOutEmployeeToFixedLen = new BindyFixedLengthDataFormat(OutEmployeeFixedLen.class);
-
-        Predicate maleAndNagy = PredicateBuilder.and(body().isNotNull(),
-                                                      body().method("getGender").isEqualTo("male"),
-                                                      body().method("getName").contains("Nagy"));
 
         //@formatter:off
+        errorHandler(deadLetterChannel(EmployeeOutRoutes.URI_DIRECT_OUTPUT_ERROR_ROUTE)
+                         .useOriginalMessage()
+                         //.maximumRedeliveries(1)
+                         //.maximumRedeliveryDelay(100)
+                     );
+
         //from("file:src/data/csv?noop=true")
         from("file:src/data/csv?move=" + ARCHIVE_FOLDER + "&moveFailed=" + ERROR_FOLDER)
             .routeId("csvFileReading")
             .log("csv file reading is started")
-            .onException(IllegalArgumentException.class)
+            /*.onException(IllegalArgumentException.class)
                 .log("exception: ${exception.message}")
                 .handled(true)
                 //.bean(util, "throwException")
-            .end()
+            .end()*/
             .split().tokenize("\n").streaming()
                 //.stopOnException()
                 .log("body before unmarshal = ${body}")
@@ -100,12 +86,12 @@ public class EmployeeCsvProcessRoute extends RouteBuilder {
             .bean(Validator.class,"validatePhoneNumber(${body.phoneNumber})")
             .choice()
                 .when(simple("${body.position} == 'manager'"))
-                    .to(URI_DIRECT_OUTPUT_MANAGER_CSV)
+                    .to(EmployeeOutRoutes.URI_DIRECT_OUTPUT_MANAGER_CSV)
                 .otherwise()
                     .multicast()
-                        .to(URI_DIRECT_OUTPUT_EMPLOYEE_CSV)
-                        .to(URI_DIRECT_OUTPUT_FEMALE_EMPLOYEE_CSV)
-                        .to(URI_DIRECT_OUTPUT_EMPLOYEE_FIXED_LEN)
+                        .to(EmployeeOutRoutes.URI_DIRECT_OUTPUT_EMPLOYEE_CSV)
+                        .to(EmployeeOutRoutes.URI_DIRECT_OUTPUT_FEMALE_EMPLOYEE_CSV)
+                        .to(EmployeeOutRoutes.URI_DIRECT_OUTPUT_EMPLOYEE_FIXED_LEN)
             .endChoice()
             //.bean(employeeToCsvMapper, "employeeToOutput")
             //.marshal(bindyEmployeeOutputCsv)
@@ -123,7 +109,7 @@ public class EmployeeCsvProcessRoute extends RouteBuilder {
                 .eagerCheckCompletion()
                 //.completion()
                 .completionTimeout(1000)
-                .to(URI_DIRECT_OUTPUT_AGGREGATED_SALARIES)
+                .to(EmployeeOutRoutes.URI_DIRECT_OUTPUT_AGGREGATED_SALARIES)
             .log("Aggregation is finished")
         .end();
 
@@ -135,49 +121,6 @@ public class EmployeeCsvProcessRoute extends RouteBuilder {
             .doCatch(IllegalArgumentException.class)
                 //.throwException(IllegalArgumentException.class, "parsing error: ${body}")
                 .bean(util, "throwException")
-            .end();
-
-        from(URI_DIRECT_OUTPUT_EMPLOYEE_CSV)
-            .routeId("outCsv")
-            .log("outCsv route is started")
-            .bean(employeeToCsvConverter, "convertEmployee")
-            .marshal(bindyOutEmployeeToCsv)
-            .to("file:src/data/output/?fileName=OutEmployee.csv&fileExist=append")
-            .end();
-
-        from(URI_DIRECT_OUTPUT_FEMALE_EMPLOYEE_CSV)
-            .routeId("outFemaleCsv")
-            .log("outFemaleCsv route is started")
-            //.filter().simple("${body.gender} == 'female'")
-            //.filter(body().method("getGender").isEqualTo("female"))
-            .filter(maleAndNagy)
-            .bean(employeeToCsvConverter, "convertEmployee")
-            .marshal(bindyOutEmployeeToCsv)
-            .to("file:src/data/output/?fileName=OutFemaleEmployee.csv&fileExist=append")
-            .end();
-
-        from(URI_DIRECT_OUTPUT_MANAGER_CSV)
-            .routeId("outManagerCsv")
-            .log("outManagerCsv route is started")
-            .bean(employeeToCsvConverter, "convertEmployee")
-            .marshal(bindyOutEmployeeToCsv)
-            .to("file:src/data/output/?fileName=OutManager.csv&fileExist=append")
-            .end();
-
-        from(URI_DIRECT_OUTPUT_AGGREGATED_SALARIES)
-            .routeId("outAggregatedCsv")
-            .log("outAggregatedCsv route is started")
-            //.bean(employeeToCsvConverter, "convertEmployee")
-            .marshal(bindyOutAggregatedToCsv)
-            .to("file:src/data/output/?fileName=OutAggregatedSalaries.csv&fileExist=append")
-            .end();
-
-        from(URI_DIRECT_OUTPUT_EMPLOYEE_FIXED_LEN)
-            .routeId("outFixed")
-            .log("outFixedLen route is started")
-            .bean(employeeToFixedLenConverter, "convertEmployee")
-            .marshal(bindyOutEmployeeToFixedLen)
-            .to("file:src/data/output/?fileName=OutEmployee.fixed&fileExist=append")
             .end();
         //@formatter:on
     }

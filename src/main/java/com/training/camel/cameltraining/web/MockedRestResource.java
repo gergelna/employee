@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MockedRestResource {
 
     @GetMapping(value = {"/employee", "/alternativ-barcodes"})
-    public ResponseEntity<List> getEmployee(){
+    public ResponseEntity<List> getEmployee() {
 
         List<String> result = new ArrayList<>();
 
@@ -26,15 +26,17 @@ public class MockedRestResource {
     }
 
     @GetMapping(value = {"/companycars"})
-    public ResponseEntity<List> getCompanyCars(){
-        return ResponseEntity.ok(createCompanyCars());
+    public ResponseEntity<List> getAllCompanyCars() {
+        return ResponseEntity.ok().header("x-custom", "custom value").body(createCompanyCars());
     }
 
     @GetMapping(value = {"/companycars/{employeeId}"})
-    public ResponseEntity<List> getCompanyCarsByEmployeeId(@PathVariable Integer employeeId){
+    public ResponseEntity<List> getCompanyCarsByEmployeeId(@PathVariable Integer employeeId) {
 
-        List<CompanyCarDTO> companyCars = createCompanyCars().stream().filter(car -> car.getEmployeeId() == employeeId).collect(
-            Collectors.toList());
+        List<CompanyCarDTO> companyCars = createCompanyCars().stream()
+                                                             .filter(car -> car.getEmployeeId() == employeeId)
+                                                             .collect(
+                                                                 Collectors.toList());
 
         /*if (companyCars.isEmpty()){
             throw new IllegalArgumentException("Company Car is not found for Employee: " + employeeId);
@@ -43,7 +45,7 @@ public class MockedRestResource {
         return ResponseEntity.ok(companyCars);
     }
 
-    private List<CompanyCarDTO> createCompanyCars(){
+    private List<CompanyCarDTO> createCompanyCars() {
         List<CompanyCarDTO> companyCars = new ArrayList<>();
         companyCars.add(new CompanyCarDTO(1, "Ford", "White", "Gasoline", 1));
         companyCars.add(new CompanyCarDTO(2, "Mercedes", "Brown", "Gasoline", 2));

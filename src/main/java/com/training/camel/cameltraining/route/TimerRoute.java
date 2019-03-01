@@ -18,9 +18,10 @@ public class TimerRoute extends RouteBuilder {
             .routeId("timerRoute")
             .log("Timer route is started")
             //.setProperty(Util.EMPLOYEE_ID, constant(1))
+            .to("direct:fetchAllRestData")
             //.to(RestRoutes.URI_DIRECT_FETCH_ALL_REST_DATA)
             //.to(RestRoutes.URI_DIRECT_FETCH_COMPANY_CAR_BY_EMPLOYEE_ID)
-            .to(URI_DIRECT_LOOP)
+            //.to(URI_DIRECT_LOOP)
             .log("Timer route is ended")
             .end();
 
