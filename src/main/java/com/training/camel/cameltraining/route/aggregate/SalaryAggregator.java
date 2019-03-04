@@ -6,7 +6,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.processor.aggregate.AggregationStrategy;
 import org.apache.camel.processor.aggregate.PreCompletionAwareAggregationStrategy;
 
-public class SalaryAggregator implements AggregationStrategy, PreCompletionAwareAggregationStrategy {
+//public class SalaryAggregator implements AggregationStrategy, PreCompletionAwareAggregationStrategy {
+public class SalaryAggregator implements AggregationStrategy {
 
     @Override
     public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
@@ -28,7 +29,7 @@ public class SalaryAggregator implements AggregationStrategy, PreCompletionAware
         }
     }
 
-    @Override
+/*    @Override
     public boolean preComplete(Exchange oldExchange, Exchange newExchange) {
 
         //return false;
@@ -44,5 +45,5 @@ public class SalaryAggregator implements AggregationStrategy, PreCompletionAware
             //return salary.getSalaries() + inEmployeeCsv.getSalary() > 500;
         }
         return retVal;
-    }
+    }*/
 }

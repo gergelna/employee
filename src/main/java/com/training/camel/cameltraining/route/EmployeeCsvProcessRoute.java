@@ -50,8 +50,6 @@ public class EmployeeCsvProcessRoute extends RouteBuilder {
         //@formatter:off
         errorHandler(deadLetterChannel(EmployeeOutRoutes.URI_DIRECT_OUTPUT_ERROR_ROUTE)
                          .useOriginalMessage()
-                         //.maximumRedeliveries(1)
-                         //.maximumRedeliveryDelay(100)
                      );
 
         //from("file:src/data/csv?noop=true")
