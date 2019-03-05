@@ -19,7 +19,7 @@ public class EmployeeOutRoutes extends RouteBuilder {
 
     public static final String URI_DIRECT_OUTPUT_EMPLOYEE_CSV = "direct:outputCsv";
     public static final String URI_DIRECT_OUTPUT_MANAGER_CSV = "direct:outputManagerCsv";
-    public static final String URI_DIRECT_OUTPUT_FEMALE_EMPLOYEE_CSV = "direct:outputFemaleCsv";
+    public static final String URI_DIRECT_OUTPUT_CUSTOM_EMPLOYEE_CSV = "direct:outputFemaleCsv";
     public static final String URI_DIRECT_OUTPUT_EMPLOYEE_FIXED_LEN = "direct:outputFixedLen";
     public static final String URI_DIRECT_OUTPUT_AGGREGATED_SALARIES = "direct:outAggregatedSalaries";
     public static final String URI_DIRECT_OUTPUT_ERROR_ROUTE = "direct:outError";
@@ -30,7 +30,7 @@ public class EmployeeOutRoutes extends RouteBuilder {
 
     public EmployeeOutRoutes(EmployeeToCsvMapper employeeToCsvMapper,
                              EmployeeToFixedLenConverter employeeToFixedLenConverter,
-                             EmployeeToCsvConverter employeeToCsvConverter){
+                             EmployeeToCsvConverter employeeToCsvConverter) {
         this.employeeToCsvMapper = employeeToCsvMapper;
         this.employeeToFixedLenConverter = employeeToFixedLenConverter;
         this.employeeToCsvConverter = employeeToCsvConverter;
@@ -46,23 +46,25 @@ public class EmployeeOutRoutes extends RouteBuilder {
                                                      body().method("getGender").isEqualTo("male"),
                                                      body().method("getName").contains("Nagy"));
 
-
         //@formatter:off
         from(URI_DIRECT_OUTPUT_EMPLOYEE_CSV)
             .routeId("outCsv")
 
             .log("outCsv route is started")
             .bean(employeeToCsvConverter, "convertEmployee")
+            .process(exchange -> {
+                int i = 2;
+            })
             .marshal(bindyOutEmployeeToCsv)
             .to("file:src/data/output/?fileName=OutEmployee.csv&fileExist=append")
             .end();
 
-        from(URI_DIRECT_OUTPUT_FEMALE_EMPLOYEE_CSV)
-            .routeId("outFemaleCsv")
-            .log("outFemaleCsv route is started")
-            //.filter().simple("${body.gender} == 'female'")
+        from(URI_DIRECT_OUTPUT_CUSTOM_EMPLOYEE_CSV)
+            .routeId("outCustomCsv")
+            .log("outCustomCsv route is started")
+            .filter().simple("${body.gender} == 'female'")
             //.filter(body().method("getGender").isEqualTo("female"))
-            .filter(maleAndNagy)
+            //.filter(maleAndNagy)
             .bean(employeeToCsvConverter, "convertEmployee")
             .marshal(bindyOutEmployeeToCsv)
             .to("file:src/data/output/?fileName=OutFemaleEmployee.csv&fileExist=append")

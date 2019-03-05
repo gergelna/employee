@@ -17,7 +17,9 @@ public class EmployeeEnricher implements AggregationStrategy {
         List<CompanyCarDTO> companyCars = newExchange.getIn().getBody(ArrayList.class);
         InEmployeeCsv inEmployeeCsv = oldExchange.getIn().getBody(InEmployeeCsv.class);
 
-        inEmployeeCsv.setCompanyCarBrand(companyCars.stream().map(car -> car.getBrand()).collect(Collectors.joining(",")));
+        inEmployeeCsv.setCompanyCarBrand(companyCars.stream()
+                                                    .map(car -> car.getBrand())
+                                                    .collect(Collectors.joining(",")));
         oldExchange.getIn().setBody(inEmployeeCsv);
         return oldExchange;
     }

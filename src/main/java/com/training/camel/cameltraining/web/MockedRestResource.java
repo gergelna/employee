@@ -14,17 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class MockedRestResource {
 
-    @GetMapping(value = {"/employee", "/alternativ-barcodes"})
-    public ResponseEntity<List> getEmployee() {
-
-        List<String> result = new ArrayList<>();
-
-        result.add("aaaa");
-        result.add("bbbb");
-
-        return ResponseEntity.ok(result);
-    }
-
     @GetMapping(value = {"/companycars"})
     public ResponseEntity<List> getAllCompanyCars() {
         return ResponseEntity.ok().header("x-custom", "custom value").body(createCompanyCars());

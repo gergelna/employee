@@ -7,7 +7,6 @@ import com.training.camel.cameltraining.service.dto.OutEmployeeFixedLen;
 import java.time.LocalDateTime;
 import org.apache.camel.Exchange;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 @Component
 public class EmployeeToFixedLenConverter {

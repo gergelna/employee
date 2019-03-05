@@ -7,7 +7,7 @@ public class Salaries {
 
     private List<SalaryCsv> salaries;
 
-    public Salaries(){
+    public Salaries() {
         salaries = new ArrayList<>();
     }
 

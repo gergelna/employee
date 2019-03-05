@@ -11,7 +11,7 @@ public class PhoneNumberTransformProcessor implements Processor {
     @Override
     public void process(Exchange exchange) throws Exception {
         InEmployeeCsv inEmployeeCsv = exchange.getIn().getBody(InEmployeeCsv.class);
-        if (inEmployeeCsv.getPhoneNumber().startsWith("06")){
+        if (inEmployeeCsv.getPhoneNumber().startsWith("06")) {
             inEmployeeCsv.setPhoneNumber(inEmployeeCsv.getPhoneNumber().replaceFirst("06", "+36"));
         }
         exchange.getIn().setBody(inEmployeeCsv);

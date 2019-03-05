@@ -17,16 +17,16 @@ public class SalaryCsv {
     @DataField(pos = 3)
     private Integer salaries;
 
-    public SalaryCsv(String position){
-        this.position =  position;
+    public SalaryCsv(String position) {
+        this.position = position;
         salaries = 0;
     }
 
-    public void increaseCount(){
+    public void increaseCount() {
         count++;
     }
 
-    public void addSalary(InEmployeeCsv inEmployeeCsv){
+    public void addSalary(InEmployeeCsv inEmployeeCsv) {
         this.salaries += inEmployeeCsv.getSalary();
     }
 }

@@ -11,17 +11,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class RestRoutes extends RouteBuilder {
 
-    private final static String REST_BASE_URL = "http4://localhost:9001/camel/api/";
-
     public final static String ROUTE_ID_FETCH_REST_DATA = "fetchAllRestData";
     public final static String ROUTE_ID_FETCH_COMPANY_CAR_BY_EMPLOYEE_ID = "fetchCompanyCarByEmployeeId";
-
     public final static String URI_DIRECT_FETCH_ALL_REST_DATA = "direct:" + ROUTE_ID_FETCH_REST_DATA;
-    public final static String URI_DIRECT_FETCH_COMPANY_CAR_BY_EMPLOYEE_ID = "direct:" + ROUTE_ID_FETCH_COMPANY_CAR_BY_EMPLOYEE_ID;
-
+    public final static String URI_DIRECT_FETCH_COMPANY_CAR_BY_EMPLOYEE_ID =
+        "direct:" + ROUTE_ID_FETCH_COMPANY_CAR_BY_EMPLOYEE_ID;
+    private final static String REST_BASE_URL = "http4://localhost:9001/camel/api/";
     private final Util util;
 
-    public RestRoutes(Util util){
+    public RestRoutes(Util util) {
         this.util = util;
     }
 
@@ -60,10 +58,6 @@ public class RestRoutes extends RouteBuilder {
             .log("rest body: ${body}")
             .unmarshal(companyCarListJsonFormat)
             .log("Found companyCars:${body.size}")
-
-            /*.split().simple("${body}").streaming()
-                .log("body:'${body}'")
-            .end()*/
             .log("Fetch companyCar by Employee route is ended")
             .end();
         //@formatter:on

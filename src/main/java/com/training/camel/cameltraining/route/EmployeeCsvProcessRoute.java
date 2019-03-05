@@ -2,21 +2,12 @@ package com.training.camel.cameltraining.route;
 
 import com.training.camel.cameltraining.component.PhoneNumberTransformProcessor;
 import com.training.camel.cameltraining.component.Validator;
-import com.training.camel.cameltraining.component.converter.EmployeeToCsvConverter;
-import com.training.camel.cameltraining.component.converter.EmployeeToFixedLenConverter;
-import com.training.camel.cameltraining.component.mapper.EmployeeToCsvMapper;
 import com.training.camel.cameltraining.component.util.Util;
 import com.training.camel.cameltraining.route.aggregate.EmployeeEnricher;
 import com.training.camel.cameltraining.route.aggregate.SalaryAggregator;
 import com.training.camel.cameltraining.service.dto.InEmployeeCsv;
-import com.training.camel.cameltraining.service.dto.OutEmployeeCsv;
-import com.training.camel.cameltraining.service.dto.OutEmployeeFixedLen;
-import com.training.camel.cameltraining.service.dto.SalaryCsv;
-import org.apache.camel.Predicate;
-import org.apache.camel.builder.PredicateBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.dataformat.bindy.csv.BindyCsvDataFormat;
-import org.apache.camel.dataformat.bindy.fixed.BindyFixedLengthDataFormat;
 import org.apache.camel.spi.DataFormat;
 import org.springframework.stereotype.Component;
 
@@ -88,13 +79,10 @@ public class EmployeeCsvProcessRoute extends RouteBuilder {
                 .otherwise()
                     .multicast()
                         .to(EmployeeOutRoutes.URI_DIRECT_OUTPUT_EMPLOYEE_CSV)
-                        .to(EmployeeOutRoutes.URI_DIRECT_OUTPUT_FEMALE_EMPLOYEE_CSV)
+                        .to(EmployeeOutRoutes.URI_DIRECT_OUTPUT_CUSTOM_EMPLOYEE_CSV)
                         .to(EmployeeOutRoutes.URI_DIRECT_OUTPUT_EMPLOYEE_FIXED_LEN)
             .endChoice()
-            //.bean(employeeToCsvMapper, "employeeToOutput")
-            //.marshal(bindyEmployeeOutputCsv)
             .log("endOfSplit")
-            //.to("file:src/data/output/?fileExist=append")
             .end()
             .log("afterSplit")
         .end();
@@ -105,7 +93,6 @@ public class EmployeeCsvProcessRoute extends RouteBuilder {
             .setHeader("position", simple("${body.position}"))
             .aggregate(header("position"), new SalaryAggregator())
                 .eagerCheckCompletion()
-                //.completion()
                 .completionTimeout(1000)
                 .to(EmployeeOutRoutes.URI_DIRECT_OUTPUT_AGGREGATED_SALARIES)
             .log("Aggregation is finished")

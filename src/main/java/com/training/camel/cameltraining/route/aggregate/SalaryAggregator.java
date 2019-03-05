@@ -4,7 +4,6 @@ import com.training.camel.cameltraining.service.dto.InEmployeeCsv;
 import com.training.camel.cameltraining.service.dto.SalaryCsv;
 import org.apache.camel.Exchange;
 import org.apache.camel.processor.aggregate.AggregationStrategy;
-import org.apache.camel.processor.aggregate.PreCompletionAwareAggregationStrategy;
 
 //public class SalaryAggregator implements AggregationStrategy, PreCompletionAwareAggregationStrategy {
 public class SalaryAggregator implements AggregationStrategy {
@@ -14,14 +13,14 @@ public class SalaryAggregator implements AggregationStrategy {
 
         InEmployeeCsv inEmployeeCsv = newExchange.getIn().getBody(InEmployeeCsv.class);
 
-        if (oldExchange == null){
+        if (oldExchange == null) {
             SalaryCsv salary = new SalaryCsv(inEmployeeCsv.getPosition());
             salary.addSalary(inEmployeeCsv);
             salary.increaseCount();
             newExchange.getIn().setBody(salary);
 
             return newExchange;
-        }else {
+        } else {
             SalaryCsv salary = oldExchange.getIn().getBody(SalaryCsv.class);
             salary.addSalary(inEmployeeCsv);
             salary.increaseCount();
@@ -29,6 +28,7 @@ public class SalaryAggregator implements AggregationStrategy {
         }
     }
 
+    // When PreCompletionAwareAggregationStrategy in the class declaration
 /*    @Override
     public boolean preComplete(Exchange oldExchange, Exchange newExchange) {
 
